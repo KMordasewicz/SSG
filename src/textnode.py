@@ -3,12 +3,12 @@ from enum import Enum
 from typing import override
 
 class TextType(Enum):
-    NORMAL = ""
-    BOLD = "**"
-    ITALIC = "_"
-    CODE = "`"
-    LINK = "[("
-    IMAGE = "![("
+    TEXT = "text"
+    BOLD = "bold"
+    ITALIC = "italic"
+    CODE = "code"
+    LINK = "link"
+    IMAGE = "image"
 
 class TextNode:
     def __init__(self, text: str, text_type: TextType, url: str|None=None) -> None:
