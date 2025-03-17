@@ -8,7 +8,8 @@ from text_to_html import (
     extract_markdown_links,
     split_nodes_image,
     text_to_textnodes,
-    markdown_to_blocks
+    markdown_to_blocks,
+    markdown_to_html_node
 )
 from textnode import TextNode, TextType
 from htmlnode import LeafNode
@@ -398,6 +399,81 @@ This is a paragraph of text. It has some **bold** and _italic_ words inside of i
         block = markdown_to_blocks(md)
 
         self.assertEqual(block, [])
+
+
+class TestMarkdownToHtmlNode(unittest.TestCase):
+    def test_paragraphs(self):
+        md = """
+This is **bolded** paragraph
+text in a p
+tag here
+
+This is another paragraph with _italic_ text and `code` here
+
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+
+        self.assertEqual(
+            html,
+            "<div><p>This is <b>bolded</b> paragraph text in a p tag here</p><p>This is another paragraph with <i>italic</i> text and <code>code</code> here</p></div>",
+        )
+
+    def test_codeblock(self):
+        md = """
+```
+This is text that _should_ remain
+the **same** even with inline stuff
+```
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+
+        self.assertEqual(
+            html,
+            "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>",
+        )
+
+
+    def test_heading_quote_unolist(self):
+        md = """
+### This is title
+
+>Once a smart man said.
+>Don't do _drugs_.
+>Cause drugs are **bad**.
+
+- Item 1
+- Item 2
+- `code` item 3
+
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+
+        self.assertEqual(
+            html,
+            "<div><h3>This is title</h3><blockquote>Once a smart man said. Don't do <i>drugs</i>. Cause drugs are <b>bad</b>.</blockquote><ul><li>Item 1</li><li>Item 2</li><li><code>code</code> item 3</li></ul></div>",
+        )
+
+
+    def test_headling_olist(self):
+        md = """
+#### **Title**
+
+1. Item 1
+2. _Item 2_
+3. Item ![image](https://link_to_image.com)
+
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+
+        self.assertEqual(
+            html,
+            "<div><h4><b>Title</b></h4><ol><li>Item 1</li><li><i>Item 2</i></li><li>Item <img src=\"https://link_to_image.com\" alt=\"image\" /></li></ol></div>",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

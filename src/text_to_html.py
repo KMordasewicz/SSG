@@ -2,7 +2,8 @@ from collections.abc import Iterator
 import re
 from itertools import chain, zip_longest
 from textnode import TextNode, TextType
-from htmlnode import LeafNode
+from htmlnode import HTMLNode, LeafNode, ParentNode
+from blocknode import BlockType, block_to_block_type
 
 
 def text_node_to_html_node(text_node: TextNode) -> LeafNode:
@@ -159,6 +160,80 @@ def markdown_to_blocks(markdown: str) -> list[str]:
     return blocks
 
 
+def text_to_children(text: str) -> list[LeafNode]:
+    return list(map(text_node_to_html_node, text_to_textnodes(text)))
+
+
+def markdown_list_to_text(block: str) -> list[str]:
+    points = block.splitlines()
+
+    return list(map(lambda x: x.split(maxsplit=1)[1], points))
+
+
+def code_block_to_html(text: str) -> ParentNode:
+    code_content = re.split(r"\n?```\n?", text)[1] + "\n"
+    return ParentNode("pre", [LeafNode("code", code_content)])
+
+
+def heading_block_to_html(text: str) -> ParentNode:
+    text_elm = text.split(maxsplit=1)
+    hashes = text_elm[0].count("#")
+    children = text_to_children(text_elm[1])
+    if 1 <= hashes <= 6:
+            return ParentNode(f"h{hashes}", children)
+    else:
+        raise ValueError(f"Heading markdown should contain 1-6 '#', provided {hashes}'.")
+
+
+def quote_block_to_html(text: str) -> ParentNode:
+    quotes = text.splitlines()
+    quotes_content = list(map(lambda x: x.split(">", maxsplit=1)[1], quotes))
+    content_block =  " ".join(quotes_content)
+    children = text_to_children(content_block)
+
+    return ParentNode("blockquote", children)
+
+
+def list_block_to_html(text: str, tag: str) -> ParentNode:
+    points = markdown_list_to_text(text)
+    node_points = map(lambda x: text_to_children(x), points)
+    parent_points = list(map(lambda x: ParentNode("li", x), node_points))
+
+    return ParentNode(tag, parent_points)
+
+
+def paragraph_block_to_html(text: str) -> ParentNode:
+    text_lines = text.splitlines()
+    text_line = " ".join(text_lines)
+    children = text_to_children(text_line)
+
+    return ParentNode("p", children)
+
+
+def block_to_html_parent_node(block_type: BlockType, text: str) -> ParentNode:
+    match block_type:
+        case BlockType.CODE:
+            return code_block_to_html(text)
+        case BlockType.HEADING:
+            return heading_block_to_html(text)
+        case BlockType.QUOTE:
+            return quote_block_to_html(text)
+        case BlockType.UNOLIST:
+            return list_block_to_html(text, "ul")
+        case BlockType.OLIST:
+            return list_block_to_html(text, "ol")
+        case BlockType.PARAGRAPH:
+            return paragraph_block_to_html(text)
+
+
+def markdown_to_html_node(markdown: str) -> ParentNode:
+    blocks = markdown_to_blocks(markdown)
+    child_nodes: list[HTMLNode] = []
+    for block in blocks:
+        block_type = block_to_block_type(block)
+        child_nodes.append(block_to_html_parent_node(block_type, block))
+
+    return ParentNode("div", child_nodes)
 
 
 

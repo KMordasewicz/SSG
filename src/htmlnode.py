@@ -1,6 +1,6 @@
 from __future__ import annotations
 from abc import abstractmethod
-from doctest import UnexpectedException
+from collections.abc import Sequence
 from functools import reduce
 from typing import final, override
 
@@ -11,13 +11,13 @@ class HTMLNode:
         self,
         tag: str|None=None,
         value: str|None=None,
-        children: list[HTMLNode]|None=None,
+        children: Sequence[HTMLNode]|None=None,
         props: dict[str, str]|None=None
     ) -> None:
         self.tag: str|None = tag
-        self.value:str|None = value
-        self.children:list[HTMLNode]|None = children
-        self.props:dict[str, str]|None = props
+        self.value: str|None = value
+        self.children: Sequence[HTMLNode]|None = children
+        self.props: dict[str, str]|None = props
 
 
     @abstractmethod
@@ -49,10 +49,14 @@ class LeafNode(HTMLNode):
 
     @override
     def to_html(self) -> str|Exception:
-        if not self.value:
+        if self.value is None:
             raise ValueError("All leaf nodes must have a value")
         elif not self.tag:
             return self.value
+        elif self.tag == "img":
+            if self.value != "":
+                raise ValueError("Image node shouldn't have a value")
+            return f"<{self.tag}{self.props_to_html()} />"
         else:
             return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"
 
@@ -61,7 +65,7 @@ class ParentNode(HTMLNode):
     def __init__(
         self,
         tag: str,
-        children: list[HTMLNode],
+        children: Sequence[HTMLNode],
         props: dict[str, str] | None = None
     ) -> None:
         super().__init__(tag, None, children, props)

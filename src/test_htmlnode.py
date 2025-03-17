@@ -99,6 +99,20 @@ class TestLeafNode(unittest.TestCase):
         self.assertEqual(node.to_html(), expected_html)
 
 
+    def test_leaf_to_html_img(self):
+        node = LeafNode("img", "", {"src": "https://www.image.com", "alt": "I'm image!"})
+        expected_html = "<img src=\"https://www.image.com\" alt=\"I'm image!\" />"
+
+        self.assertEqual(node.to_html(), expected_html)
+
+
+    def test_leaf_to_html_bad_img(self):
+        node = LeafNode("img", "I shoudn't exist", {"src": "https://www.image.com", "alt": "I'm image!"})
+
+        with self.assertRaisesRegex(ValueError, "Image node shouldn't have a value"):
+            _ = node.to_html()
+
+
 class TestParentNode(unittest.TestCase):
     def test_init(self):
         child: LeafNode = LeafNode("a", "child")
