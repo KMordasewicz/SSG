@@ -17,14 +17,16 @@ def copy_dir_content(path: str, destination: str):
     print(f"coping file from {path} to {destination}")
     dir_content = os.listdir(path)
     print(f"Content of {path}: {dir_content}")
-    for content in os.path.join(path, *dir_content):
-        if os.path.isfile(content):
-            print(f"Coping file: {content}")
-            shutil.copy(content, destination)
+    for content in dir_content:
+        content_path = os.path.join(path, content)
+        print(content_path)
+        if os.path.isfile(content_path):
+            print(f"Coping file: {content_path}")
+            shutil.copy(content_path, destination)
         else:
             print(f"Encounter dir {content}")
             copy_dir_content(
-                os.path.join(path, content),
+                content_path,
                 os.path.join(destination, content)
             )
 
