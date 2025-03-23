@@ -1,6 +1,6 @@
 import os
-from signal import raise_signal
 from file_deploy import delete_dir_content, copy_dir_content
+from page_generator import generate_page
 
 
 
@@ -12,6 +12,8 @@ def main() -> None:
     static_path = cwd + "/static"
     delete_dir_content(public_path)
     copy_dir_content(static_path, public_path)
+    generate_page("context/index.md", "template.html", "public/index.html")
+
 
 if __name__ == "__main__":
     main()
