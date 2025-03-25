@@ -16,7 +16,7 @@ def main() -> None:
     static_path = cwd + "/static"
     delete_dir_content(public_path)
     copy_dir_content(static_path, public_path)
-    generate_pages_recursive("content", "template.html", "docs", basepath)
+    generate_pages_recursive("content", "template.html", "docs", basepath + "docs/")
 
 
 if __name__ == "__main__":
