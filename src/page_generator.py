@@ -1,3 +1,4 @@
+from ntpath import isfile
 import os
 from shutil import ExecError
 from text_to_html import markdown_to_html_node
@@ -28,4 +29,25 @@ def generate_page(from_path: str, template_path: str, dest_path: str) -> None:
     os.makedirs(directories, exist_ok=True)
     with open(dest_path, mode="wt") as f:
         _ = f.write(full_html)
+
+
+def generate_pages_recursive(
+    content_path: str,
+    template_path: str,
+    dest_path: str
+) -> None:
+    if not os.path.exists(content_path):
+        raise ValueError(f"{content_path} does not exists")
+    if not os.path.exists(template_path):
+        raise ValueError(f"{template_path} does not exists")
+    print(f"Generating page from {content_path} to {dest_path} using {template_path}")
+    for path in os.listdir(content_path):
+        content = os.path.join(content_path, path)
+        destination = os.path.join(dest_path, path)
+        if os.path.isfile(content):
+            print(f"Encoutered file - {path}")
+            generate_page(content, template_path, destination.replace(".md", ".html"))
+        else:
+            print(f"Encoutered dir - {path}")
+            generate_pages_recursive(content, template_path, destination)
 

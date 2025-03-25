@@ -89,6 +89,19 @@ class TestSplitNodeDelimiter(unittest.TestCase):
         self.assertEqual(result, expected)
 
 
+    def test_good_code_multi(self):
+        text_node = TextNode("Those functions are based: `Bitcoin.mineAll()` and `WorldHunger.End()`", TextType.TEXT)
+        expected = [
+            TextNode("Those functions are based: ", TextType.TEXT),
+            TextNode("Bitcoin.mineAll()", TextType.CODE),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("WorldHunger.End()", TextType.CODE)
+        ]
+        result = split_node_delimiter([text_node], "`", TextType.CODE)
+
+        self.assertEqual(result, expected)
+
+
     def test_good_bold(self):
         text_node = TextNode("This text is **bold**, very BOLD!", TextType.TEXT)
         expected = [

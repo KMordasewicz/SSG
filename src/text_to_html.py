@@ -1,4 +1,5 @@
 from collections.abc import Iterator
+from hmac import new
 import re
 from itertools import chain, zip_longest
 from textnode import TextNode, TextType
@@ -43,15 +44,21 @@ def split_node_delimiter(
         if len(text_sections) == 1:
             new_nodes.append(node)
             continue
-        if not len(text_sections) == 3:
+        if len(text_sections) % 2 == 0:
             message = f"Invalid Markdown syntax, delimiter: {delimiter}" \
             + f" should have a closing pair in: {text_sections[1]}"
             raise Exception(message)
-        new_node = [
-            TextNode(text_sections[0], node.text_type),
-            TextNode(text_sections[1], text_type),
-            TextNode(text_sections[2], node.text_type)
-        ]
+        new_node: list[TextNode] = []
+        for i, split_text in enumerate(text_sections):
+            if i % 2 == 0:
+                new_node.append(TextNode(split_text, node.text_type))
+            else:
+                new_node.append(TextNode(split_text, text_type))
+        # new_node = [
+        #     TextNode(text_sections[0], node.text_type),
+        #     TextNode(text_sections[1], text_type),
+        #     TextNode(text_sections[2], node.text_type)
+        # ]
         new_node = list(filter(lambda node: node.text != "", new_node))
         new_nodes.extend(new_node)
 
@@ -187,7 +194,7 @@ def heading_block_to_html(text: str) -> ParentNode:
 
 def quote_block_to_html(text: str) -> ParentNode:
     quotes = text.splitlines()
-    quotes_content = list(map(lambda x: x.split(">", maxsplit=1)[1], quotes))
+    quotes_content = list(map(lambda x: x.split(">", maxsplit=1)[1].lstrip(), quotes))
     content_block =  " ".join(quotes_content)
     children = text_to_children(content_block)
 

@@ -1,6 +1,6 @@
 import os
 from file_deploy import delete_dir_content, copy_dir_content
-from page_generator import generate_page
+from page_generator import generate_pages_recursive
 
 
 
@@ -12,7 +12,7 @@ def main() -> None:
     static_path = cwd + "/static"
     delete_dir_content(public_path)
     copy_dir_content(static_path, public_path)
-    generate_page("context/index.md", "template.html", "public/index.html")
+    generate_pages_recursive("content", "template.html", "public")
 
 
 if __name__ == "__main__":
